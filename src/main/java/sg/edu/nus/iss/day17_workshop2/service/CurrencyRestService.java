@@ -14,8 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
-
+import org.springframework.web.util.UriComponentsBuilder;
 
 import sg.edu.nus.iss.day17_workshop2.constant.Constant;
 import sg.edu.nus.iss.day17_workshop2.model.Country;
@@ -91,7 +90,9 @@ public class CurrencyRestService {
 
         // build the query
         String currencyFrom_currencyTo = currencyFrom + "_" + currencyTo;
-        String query = Constant.getConversionRateURL + "q=" + currencyFrom_currencyTo + "&compact=ultra" + "&apiKey=" + apiKey;
+        // String query = Constant.getConversionRateURL + "q=" + currencyFrom_currencyTo + "&compact=ultra" + "&apiKey=" + apiKey;
+
+        String query = buildURL(currencyFrom, currencyTo);
 
         // Make the HTTP GET request and get the response as a String
         ResponseEntity<String> response = restTemplate.getForEntity(query, String.class);
@@ -103,6 +104,20 @@ public class CurrencyRestService {
 
     }
 
-    
+    public String buildURL(String currencyFrom, String currencyTo) {
+
+        if (currencyFrom == null || currencyTo == null || currencyFrom.isEmpty() || currencyTo.isEmpty()) {
+            throw new IllegalArgumentException("CurrencyFrom and CurrencyTo must not be null or empty");
+        }
+
+        String url = UriComponentsBuilder
+                    .fromUriString(Constant.getConversionRateURL)
+                    .queryParam("q", String.format("%s_%s", currencyFrom, currencyTo))
+                    .queryParam("compact", Constant.COMPACT_TYPE)
+                    .queryParam("apiKey", apiKey)
+                    .build()
+                    .toUriString();
+        return url;
+    }
     
 }
